@@ -791,6 +791,18 @@ class Collector(object):
                     cfbundle_executable_path = ''
 
             plist_path = pathjoin(sub_dir_path, plist_file)
+            # kext plist files exist under the Contents subfoder in Mojave, so check if the hard-coded plist location
+            # actually exists, and if not, try in the Contents subfolder.
+            if not os.path.isfile(plist_path):
+                plist_path_save = plist_path
+                sub_dir_path = pathjoin(sub_dir_path, 'Contents')
+                plist_path = pathjoin(sub_dir_path, plist_file)
+                if not os.path.isfile(plist_path):
+                    # If the Contents subfolder also doesn't contain the plist, revert back to the
+                    # hard coded original location
+                    plist_path = plist_path_save
+                else:
+                    cfbundle_executable_path = 'MacOS'
             plist = self._read_plist(plist_path)
             cfbundle_executable = plist.get('CFBundleExecutable')
             if cfbundle_executable:
